@@ -139,3 +139,7 @@ cython_debug/
 
 .idea/
 .DS_Store
+
+# exclude everything
+media/
+
