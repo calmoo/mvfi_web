@@ -28,6 +28,12 @@
     </div>
 </nav>
 
+{% if error %}
+    <div class="alert alert-danger">
+        <strong>Error: </strong> {{error}}
+    </div>
+{% endif %}
+
 <body>
 <div class="container">
     <div class="header">
@@ -46,4 +52,15 @@
         <button type="submit" class="btn btn-outline-primary">Upload</button>
     </form>
 </div>
+{% if selected %}
+    <div>
+        Selected files
+        <ul>
+            {% for file in selected %}
+                <li>{{ file }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
 </body>
