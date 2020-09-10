@@ -1,7 +1,8 @@
 import os
-from flask import Flask, flash, request, redirect, url_for, send_from_directory, render_template
+from flask import Flask, flash, request, redirect, url_for, send_from_directory, render_template, Response
 from werkzeug.utils import secure_filename
 import encoder
+import time, json
 
 """
 Build commands:
@@ -9,6 +10,14 @@ export FLASK_APP=main.py
 export FLASK_ENV=development
 flask run
 """
+class Config:
+    num_bars = 3
+    prog_inc = 10
+    update_rate = 1
+
+# Instantiate app_config
+app_cfg = Config
+
 
 UPLOAD_FOLDER = 'media/'
 PROCESSED_FOLDER = 'media/processed/'
@@ -33,7 +42,6 @@ def allowed_file(filename):
 
 
 def process_files(uploaded_files):
-
     fileset = {"audio_files": [],
                "image_file": "file.jpg"}
 
@@ -57,8 +65,6 @@ def upload_file():
     if request.method == 'POST':
         uploaded_files = request.files.getlist("file[]")
         processed_files = process_files(uploaded_files)
-        if processed_files:
-            return render_template('index.html', selected=uploaded_files)
 
         encoded_video_files = (encoder.encode_video_new(processed_files))
 
@@ -67,8 +73,26 @@ def upload_file():
         else:
             return render_template('index.html', error="No Files selected")
 
+    return render_template('index.html')
 
-    return render_template('index.html', )
+@app.route('/progress')
+def progress():
+    #vid_dict = {}
+    def generate():
+        x = 0
+        # {'video_1':str(x)}
+        while x <= 100:
+            #vid_dict['suresh']="0"
+            vid_dict = {}
+            progress = min(x+bar*app_cfg.prog_inc,100)
+            #yield "data:" + str(x) + "\n\n"
+            ret_string = "data:" + json.dumps(progress) + "\n\n"
+            print(ret_string)
+            yield ret_string
+            x = x + 10
+            time.sleep(app_cfg.update_rate)
+
+    return Response(generate(), mimetype= 'text/event-stream')
 
 
 @app.route('/uploads/<filename>')
