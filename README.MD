@@ -9,6 +9,7 @@
 ### Environment setup:
  
 ```
+brew install ffmpeg
 git clone git@github.com:calmoo/flask_mvfi.git
 cd flask_mvfi
 virtualenv venv
