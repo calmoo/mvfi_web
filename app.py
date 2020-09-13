@@ -12,7 +12,7 @@ flask run
 """
 class Config:
     num_bars = 3
-    prog_inc = 10
+    prog_inc = 0.2
     update_rate = 1
 
 # Instantiate app_config
@@ -84,10 +84,11 @@ def progress():
         while x <= 100:
             #vid_dict['suresh']="0"
             vid_dict = {}
-            progress = min(x+bar*app_cfg.prog_inc,100)
+            progress = min(x*app_cfg.prog_inc,100)
             #yield "data:" + str(x) + "\n\n"
             ret_string = "data:" + json.dumps(progress) + "\n\n"
             print(ret_string)
+
             yield ret_string
             x = x + 10
             time.sleep(app_cfg.update_rate)
