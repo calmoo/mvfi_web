@@ -28,7 +28,7 @@ ALLOWED_EXTENSIONS = {"audio": ["mp3", "wav", "aiff", "m4a"],
                       "image": ["jpg", "jpeg", "png"]}
 
 
-def allowed_file(filename):
+def allowed_file(filename: str) -> bool:
     if '.' in filename:
         file_extension = filename.rsplit('.', 1)[1].lower()
         if file_extension in ALLOWED_EXTENSIONS["audio_extensions"]:
@@ -38,7 +38,7 @@ def allowed_file(filename):
     else:
         return False
 
-def file_is_image(filename):
+def file_is_image(filename: str) -> bool
     if '.' in filename:
         file_extension = filename.rsplit('.', 1)[1].lower()
         if file_extension in ALLOWED_EXTENSIONS["audio"]:
@@ -46,7 +46,7 @@ def file_is_image(filename):
         else:
             return False
 
-def file_is_audio(filename):
+def file_is_audio(filename: str) -> bool:
     if '.' in filename:
         file_extension = filename.rsplit('.', 1)[1].lower()
         if file_extension in ALLOWED_EXTENSIONS["image"]:
@@ -56,12 +56,12 @@ def file_is_audio(filename):
 
 
 
-def process_files(uploaded_files):
+def process_files(uploaded_files: list) -> dict:
     fileset_payload = {"audio_files": [],
                "image_file": "file.jpg"}
 
     if not uploaded_files:
-        return
+        return None
 
     for file in uploaded_files:
 
