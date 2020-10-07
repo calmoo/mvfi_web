@@ -38,10 +38,10 @@ def allowed_file(filename: str) -> bool:
     else:
         return False
 
-def file_is_image(filename: str) -> bool
+def file_is_image(filename: str) -> bool:
     if '.' in filename:
         file_extension = filename.rsplit('.', 1)[1].lower()
-        if file_extension in ALLOWED_EXTENSIONS["audio"]:
+        if file_extension in ALLOWED_EXTENSIONS["image"]:
             return True
         else:
             return False
@@ -49,7 +49,7 @@ def file_is_image(filename: str) -> bool
 def file_is_audio(filename: str) -> bool:
     if '.' in filename:
         file_extension = filename.rsplit('.', 1)[1].lower()
-        if file_extension in ALLOWED_EXTENSIONS["image"]:
+        if file_extension in ALLOWED_EXTENSIONS["audio"]:
             return True
         else:
             return False
@@ -60,8 +60,6 @@ def process_files(uploaded_files: list) -> dict:
     fileset_payload = {"audio_files": [],
                "image_file": "file.jpg"}
 
-    if not uploaded_files:
-        return None
 
     for file in uploaded_files:
 
@@ -86,7 +84,6 @@ def upload_file():
 
     uploaded_files = request.files.getlist("file[]")
     processed_files = process_files(uploaded_files)
-
     encoded_video_files = (encoder.encode_video_new(processed_files))
 
     if encoded_video_files:
