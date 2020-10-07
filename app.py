@@ -10,6 +10,7 @@ export FLASK_APP=main.py
 export FLASK_ENV=development
 flask run
 """
+
 class Config:
     num_bars = 3
     prog_inc = 0.2
@@ -19,15 +20,12 @@ class Config:
 app_cfg = Config
 
 
-UPLOAD_FOLDER = 'media/'
-PROCESSED_FOLDER = 'media/processed/'
-
-ALLOWED_EXTENSIONS = {"audio_extensions": ["mp3", "wav", "aiff", "m4a"],
-                      "image_extensions": ["jpg", "jpeg", "png"]}
-
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
+app.config['UPLOAD_FOLDER'] = 'media/'
+app.config['PROCESSED_FOLDER'] = 'media/processed/'
+
+ALLOWED_EXTENSIONS = {"audio": ["mp3", "wav", "aiff", "m4a"],
+                      "image": ["jpg", "jpeg", "png"]}
 
 
 def allowed_file(filename):
@@ -40,55 +38,76 @@ def allowed_file(filename):
     else:
         return False
 
+def file_is_image(filename):
+    if '.' in filename:
+        file_extension = filename.rsplit('.', 1)[1].lower()
+        if file_extension in ALLOWED_EXTENSIONS["audio"]:
+            return True
+        else:
+            return False
+
+def file_is_audio(filename):
+    if '.' in filename:
+        file_extension = filename.rsplit('.', 1)[1].lower()
+        if file_extension in ALLOWED_EXTENSIONS["image"]:
+            return True
+        else:
+            return False
+
+
 
 def process_files(uploaded_files):
-    fileset = {"audio_files": [],
+    fileset_payload = {"audio_files": [],
                "image_file": "file.jpg"}
+
+    if not uploaded_files:
+        return
 
     for file in uploaded_files:
 
-        file_is_allowed = allowed_file(file.filename)
-        if file and file_is_allowed:
+        if file_is_audio(file.filename):
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            if file_is_allowed is "audio":
-                fileset["audio_files"].append(file_path)
-            elif file_is_allowed is "image":
-                fileset["image_file"] = file_path
+            fileset_payload["audio_files"].append(file_path)
 
-    return fileset
+        elif file_is_image(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            fileset_payload["image_file"] = file_path
+
+    return fileset_payload
 
 
-@app.route('/', methods=['GET', 'POST'])
+
+@app.route('/', methods=['POST'])
 def upload_file():
-    if request.method == 'POST':
-        uploaded_files = request.files.getlist("file[]")
-        processed_files = process_files(uploaded_files)
 
-        encoded_video_files = (encoder.encode_video_new(processed_files))
+    uploaded_files = request.files.getlist("file[]")
+    processed_files = process_files(uploaded_files)
 
-        if encoded_video_files:
-            return render_template('uploads.html', filenames=encoded_video_files)
-        else:
-            return render_template('index.html', error="No Files selected")
+    encoded_video_files = (encoder.encode_video_new(processed_files))
 
+    if encoded_video_files:
+        return render_template('uploads.html', filenames=encoded_video_files)
+    else:
+        return render_template('index.html', error="No Files selected")
+
+
+@app.route('/', methods=['GET'])
+def homepage():
     return render_template('index.html')
+
 
 @app.route('/progress')
 def progress():
-    #vid_dict = {}
     def generate():
         x = 0
-        # {'video_1':str(x)}
         while x <= 100:
-            #vid_dict['suresh']="0"
             vid_dict = {}
             progress = min(x*app_cfg.prog_inc,100)
-            #yield "data:" + str(x) + "\n\n"
             ret_string = "data:" + json.dumps(progress) + "\n\n"
-            print(ret_string)
-
             yield ret_string
             x = x + 10
             time.sleep(app_cfg.update_rate)
